@@ -1,18 +1,27 @@
 package ch.heigvd.iict.sym_labo4;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
 import android.opengl.GLSurfaceView;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
+import android.hardware.SensorManager;
 
 import ch.heigvd.iict.sym_labo4.gl.OpenGLRenderer;
 
-public class CompassActivity extends AppCompatActivity {
+public class CompassActivity extends AppCompatActivity implements SensorEventListener {
+
+    private final SensorManager mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+
+    private final Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
 
     //opengl
-    private OpenGLRenderer  opglr           = null;
-    private GLSurfaceView   m3DView         = null;
+    private OpenGLRenderer opglr = null;
+    private GLSurfaceView m3DView = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,4 +53,24 @@ public class CompassActivity extends AppCompatActivity {
         more information on rotation matrix can be found on-line:
         https://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[],%20float[],%20float[],%20float[])
     */
+
+    @Override
+    protected void onResume()
+    {
+        super.onResume();
+        mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    protected void onPause() {
+        super.onPause();
+        mSensorManager.unregisterListener(this);
+    }
+
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+    public void onSensorChanged(SensorEvent event) {
+    }
+
+
 }
