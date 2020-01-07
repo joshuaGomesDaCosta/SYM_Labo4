@@ -18,4 +18,10 @@
     <string name="ble_sendvalue_title">Envoi de valeur</string>
     <string name="ble_sendvalue_send">Send</string>
 
+    <string name="btn_temperature">afficher la température</string>
+    <string name="btn_nb_clicked">afficher le nombre de boutons cliqués</string>
+    <string name="btn_integer">envoyer le nombre</string>
+    <string name="btn_time">afficher l\'heure</string>
+    <string name="btn_update_time">Mettre à jour l\'heure</string>
+
 </resources>
