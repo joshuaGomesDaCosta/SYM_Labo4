@@ -1,10 +1,12 @@
 package ch.heigvd.iict.sym_labo4.viewmodels;
 
 import android.app.Application;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
 import android.bluetooth.BluetoothGattCharacteristic;
 import android.bluetooth.BluetoothGattService;
+import android.os.ParcelUuid;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -13,10 +15,19 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.UUID;
+
 import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.BleManagerCallbacks;
 
 public class BleOperationsViewModel extends AndroidViewModel {
+
+    public  String UUID_SERVICE_CURRENT_TIME = "00001805-0000-1000-8000-00805f9b34fb";
+    public  String UUID_CURRENT_TIME = "00002A2B-0000-1000-8000-00805f9b34fb";
+    public  String UUID_SERVICE_CUSTOM_SYM = "3c0a1000-281d-4b48-b2a7-f15579a1c38f";
+    public  String UUID_INTEGER = "3c0a1001-281d-4b48-b2a7-f15579a1c38f";
+    public  String UUID_TEMPERATURE = "3c0a1002-281d-4b48-b2a7-f15579a1c38f";
+    public  String UUID_BTN = "3c0a1003-281d-4b48-b2a7-f15579a1c38f";
 
     private static final String TAG = BleOperationsViewModel.class.getSimpleName();
 
@@ -162,6 +173,20 @@ public class BleOperationsViewModel extends AndroidViewModel {
                 mConnection = gatt; //trick to force disconnection
                 Log.d(TAG, "isRequiredServiceSupported - discovered services:");
 
+                for(BluetoothGattService service : gatt.getServices()){
+                    if( service.getUuid().equals(ParcelUuid.fromString(UUID_SERVICE_CURRENT_TIME).getUuid())){
+                        timeService = service;
+                        currentTimeChar = timeService.getCharacteristic( ParcelUuid.fromString(UUID_CURRENT_TIME).getUuid());
+                    }
+                    else if ( service.getUuid().equals(ParcelUuid.fromString(UUID_SERVICE_CUSTOM_SYM).getUuid())){
+                        symService = service;
+                        integerChar = symService.getCharacteristic(ParcelUuid.fromString(UUID_INTEGER).getUuid());
+                        temperatureChar = symService.getCharacteristic(ParcelUuid.fromString(UUID_TEMPERATURE).getUuid());
+                        buttonClickChar = symService.getCharacteristic(ParcelUuid.fromString(UUID_BTN).getUuid());
+
+                    }
+                }
+
                 /* TODO
                     - Nous devons vérifier ici que le périphérique auquel on vient de se connecter possède
                       bien tous les services et les caractéristiques attendues, on vérifiera aussi que les
@@ -171,7 +196,7 @@ public class BleOperationsViewModel extends AndroidViewModel {
                  */
 
                 //FIXME si tout est OK, on retourne true, sinon la librairie appelera la méthode onDeviceNotSupported()
-                return false;
+                return timeService != null && symService != null;
             }
 
             @Override
