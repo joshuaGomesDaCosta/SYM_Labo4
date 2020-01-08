@@ -42,6 +42,16 @@ public class BleOperationsViewModel extends AndroidViewModel {
         return mIsConnected;
     }
 
+    private final MutableLiveData<Integer> integer = new MutableLiveData<>();
+    public LiveData<Integer> getInteger() {
+        return integer;
+    }
+
+    private final MutableLiveData<Integer> temperature = new MutableLiveData<>();
+    public LiveData<Integer> getTemperature() {
+        return temperature;
+    }
+
     //references to the Services and Characteristics of the SYM Pixl
     private BluetoothGattService timeService = null, symService = null;
     private BluetoothGattCharacteristic currentTimeChar = null, integerChar = null, temperatureChar = null, buttonClickChar = null;
@@ -209,6 +219,7 @@ public class BleOperationsViewModel extends AndroidViewModel {
                     Dans notre cas il s'agit de s'enregistrer pour recevoir les notifications proposées par certaines
                     caractéristiques, on en profitera aussi pour mettre en place les callbacks correspondants.
                  */
+                currentTimeChar.notify();
             }
 
             @Override

@@ -91,13 +91,8 @@ public class BleActivity extends BaseTemplateActivity {
         this.scanPanel = findViewById(R.id.ble_scan);
         this.scanResults = findViewById(R.id.ble_scanresults);
         this.emptyScanResults = findViewById(R.id.ble_scanresults_empty);
-        
-        this.btnGetTemperature = findViewById(R.id.btn_temperature);
-        this.btnSendInteger = findViewById(R.id.btn_integer);
-        this.btnGetNbClicked = findViewById(R.id.btn_nb_clicked);
-        this.btnGetTime = findViewById(R.id.btn_time);
-        this.btnSendTime = findViewById(R.id.btn_update_time);
 
+        this.btnSendInteger = findViewById(R.id.btn_integer);
         this.editInteger = findViewById(R.id.edit_integer);
         this.textTemperature = findViewById(R.id.text_temperature);
 
@@ -174,6 +169,7 @@ public class BleActivity extends BaseTemplateActivity {
         if(isConnected != null && isConnected) {
             this.scanPanel.setVisibility(View.GONE);
             this.operationPanel.setVisibility(View.VISIBLE);
+            this.textTemperature.setText(Float.toString(this.bleViewModel.getTemperature().getValue()/10));
 
             if(this.scanMenuBtn != null && this.disconnectMenuBtn != null) {
                 this.scanMenuBtn.setVisible(false);
