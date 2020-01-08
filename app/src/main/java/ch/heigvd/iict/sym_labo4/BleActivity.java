@@ -16,6 +16,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
@@ -51,6 +53,15 @@ public class BleActivity extends BaseTemplateActivity {
 
     private ListView scanResults = null;
     private TextView emptyScanResults = null;
+    
+    private Button btnGetTemperature;
+    private Button btnSendInteger;
+    private Button btnGetNbClicked;
+    private Button btnGetTime;
+    private Button btnSendTime;
+    
+    private EditText editInteger;
+    private TextView textTemperature;
 
     //menu elements
     private MenuItem scanMenuBtn = null;
@@ -62,6 +73,7 @@ public class BleActivity extends BaseTemplateActivity {
     //states
     private Handler handler = null;
     private boolean isScanning = false;
+    
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -79,6 +91,15 @@ public class BleActivity extends BaseTemplateActivity {
         this.scanPanel = findViewById(R.id.ble_scan);
         this.scanResults = findViewById(R.id.ble_scanresults);
         this.emptyScanResults = findViewById(R.id.ble_scanresults_empty);
+        
+        this.btnGetTemperature = findViewById(R.id.btn_temperature);
+        this.btnSendInteger = findViewById(R.id.btn_integer);
+        this.btnGetNbClicked = findViewById(R.id.btn_nb_clicked);
+        this.btnGetTime = findViewById(R.id.btn_time);
+        this.btnSendTime = findViewById(R.id.btn_update_time);
+
+        this.editInteger = findViewById(R.id.edit_integer);
+        this.textTemperature = findViewById(R.id.text_temperature);
 
         //manage scanned item
         this.scanResultsAdapter = new ResultsAdapter(this);

@@ -20,6 +20,8 @@ import java.util.UUID;
 import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.BleManagerCallbacks;
 
+import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16;
+
 public class BleOperationsViewModel extends AndroidViewModel {
 
     public  String UUID_SERVICE_CURRENT_TIME = "00001805-0000-1000-8000-00805f9b34fb";
@@ -228,6 +230,8 @@ public class BleOperationsViewModel extends AndroidViewModel {
                 des MutableLiveData
                 On placera des méthodes similaires pour les autres opérations...
             */
+            temperatureChar.getIntValue(FORMAT_UINT16,0);
+
             return false; //FIXME
         }
     }

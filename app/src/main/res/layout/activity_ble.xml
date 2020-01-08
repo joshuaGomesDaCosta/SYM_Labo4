@@ -18,7 +18,7 @@
             android:orientation="vertical">
 
             <!-- TODO vous placerez dans ce layout toutes les vues nécessaire aux intéractions avec le périphérique BLE -->
-            <
+
             <Button
                 android:id="@+id/btn_temperature"
                 android:text="@string/btn_temperature"
