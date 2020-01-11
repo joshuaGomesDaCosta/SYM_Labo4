@@ -169,7 +169,7 @@ public class BleActivity extends BaseTemplateActivity {
         if(isConnected != null && isConnected) {
             this.scanPanel.setVisibility(View.GONE);
             this.operationPanel.setVisibility(View.VISIBLE);
-            this.textTemperature.setText(Float.toString(this.bleViewModel.getTemperature().getValue()/10));
+            //this.textTemperature.setText(Float.toString(this.bleViewModel.getTemperature().getValue()/10));
 
             if(this.scanMenuBtn != null && this.disconnectMenuBtn != null) {
                 this.scanMenuBtn.setVisible(false);

@@ -4,7 +4,9 @@ import android.app.Application;
 import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothGatt;
+import android.bluetooth.BluetoothGattCallback;
 import android.bluetooth.BluetoothGattCharacteristic;
+import android.bluetooth.BluetoothGattDescriptor;
 import android.bluetooth.BluetoothGattService;
 import android.os.ParcelUuid;
 import android.util.Log;
@@ -17,6 +19,7 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.UUID;
 
+import ch.heigvd.iict.sym_labo4.BleActivity;
 import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.BleManagerCallbacks;
 
@@ -24,12 +27,12 @@ import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16;
 
 public class BleOperationsViewModel extends AndroidViewModel {
 
-    public  String UUID_SERVICE_CURRENT_TIME = "00001805-0000-1000-8000-00805f9b34fb";
-    public  String UUID_CURRENT_TIME = "00002A2B-0000-1000-8000-00805f9b34fb";
-    public  String UUID_SERVICE_CUSTOM_SYM = "3c0a1000-281d-4b48-b2a7-f15579a1c38f";
-    public  String UUID_INTEGER = "3c0a1001-281d-4b48-b2a7-f15579a1c38f";
-    public  String UUID_TEMPERATURE = "3c0a1002-281d-4b48-b2a7-f15579a1c38f";
-    public  String UUID_BTN = "3c0a1003-281d-4b48-b2a7-f15579a1c38f";
+    public  UUID UUID_SERVICE_CURRENT_TIME = ParcelUuid.fromString( "00001805-0000-1000-8000-00805f9b34fb").getUuid();
+    public  UUID UUID_CURRENT_TIME = ParcelUuid.fromString( "00002A2B-0000-1000-8000-00805f9b34fb").getUuid();
+    public  UUID UUID_SERVICE_CUSTOM_SYM = ParcelUuid.fromString( "3c0a1000-281d-4b48-b2a7-f15579a1c38f").getUuid();
+    public  UUID UUID_INTEGER = ParcelUuid.fromString( "3c0a1001-281d-4b48-b2a7-f15579a1c38f").getUuid();
+    public  UUID UUID_TEMPERATURE = ParcelUuid.fromString( "3c0a1002-281d-4b48-b2a7-f15579a1c38f").getUuid();
+    public  UUID UUID_BTN = ParcelUuid.fromString( "3c0a1003-281d-4b48-b2a7-f15579a1c38f").getUuid();
 
     private static final String TAG = BleOperationsViewModel.class.getSimpleName();
 
@@ -186,15 +189,15 @@ public class BleOperationsViewModel extends AndroidViewModel {
                 Log.d(TAG, "isRequiredServiceSupported - discovered services:");
 
                 for(BluetoothGattService service : gatt.getServices()){
-                    if( service.getUuid().equals(ParcelUuid.fromString(UUID_SERVICE_CURRENT_TIME).getUuid())){
+                    if( service.getUuid().equals(UUID_SERVICE_CURRENT_TIME)){
                         timeService = service;
-                        currentTimeChar = timeService.getCharacteristic( ParcelUuid.fromString(UUID_CURRENT_TIME).getUuid());
+                        currentTimeChar = timeService.getCharacteristic( UUID_CURRENT_TIME);
                     }
-                    else if ( service.getUuid().equals(ParcelUuid.fromString(UUID_SERVICE_CUSTOM_SYM).getUuid())){
+                    else if ( service.getUuid().equals(UUID_SERVICE_CUSTOM_SYM)){
                         symService = service;
-                        integerChar = symService.getCharacteristic(ParcelUuid.fromString(UUID_INTEGER).getUuid());
-                        temperatureChar = symService.getCharacteristic(ParcelUuid.fromString(UUID_TEMPERATURE).getUuid());
-                        buttonClickChar = symService.getCharacteristic(ParcelUuid.fromString(UUID_BTN).getUuid());
+                        integerChar = symService.getCharacteristic(UUID_INTEGER);
+                        temperatureChar = symService.getCharacteristic(UUID_TEMPERATURE);
+                        buttonClickChar = symService.getCharacteristic(UUID_BTN);
 
                     }
                 }
@@ -219,7 +222,32 @@ public class BleOperationsViewModel extends AndroidViewModel {
                     Dans notre cas il s'agit de s'enregistrer pour recevoir les notifications proposées par certaines
                     caractéristiques, on en profitera aussi pour mettre en place les callbacks correspondants.
                  */
-                currentTimeChar.notify();
+
+                mConnection.setCharacteristicNotification( currentTimeChar, true);
+                mConnection.setCharacteristicNotification( buttonClickChar, true);
+                BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
+                    @Override
+                    public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        super.onCharacteristicRead(gatt, characteristic, status);
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+
+                        }else{
+                            Log.w(TAG, "onCharacteristicRead: " + status);
+                        }
+                    }
+
+                    @Override
+                    public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
+                        super.onCharacteristicWrite(gatt, characteristic, status);
+                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                            if (characteristic.getUuid().equals( UUID_INTEGER)){
+                                characteristic.setValue(integer.getValue().toString());
+                            }
+                        }else{
+                            Log.w(TAG, "onCharacteristicWrite: " + status);
+                        }
+                    }
+                };
             }
 
             @Override
