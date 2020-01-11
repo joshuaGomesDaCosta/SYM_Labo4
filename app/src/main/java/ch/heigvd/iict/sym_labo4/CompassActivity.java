@@ -18,10 +18,21 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
 
     private final Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
 
+    //private final Sensor mMagnetic = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+
 
     //opengl
     private OpenGLRenderer opglr = null;
     private GLSurfaceView m3DView = null;
+
+
+
+    float[] gravity = new float[3];//gravity
+    float[] geomagnetic  = new float[3];//geomagnetic
+    float[] matrixR = new float[16];//R
+
+    boolean sensorReady = false;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,6 +54,10 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         //init opengl surface view
         this.m3DView.setRenderer(this.opglr);
 
+
+
+
+
     }
 
     /* TODO
@@ -59,6 +74,8 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
     {
         super.onResume();
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
+
+        //mSensorManager.registerListener(this, mMagnetic, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     protected void onPause() {
@@ -69,7 +86,31 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
     }
 
+    @Override
     public void onSensorChanged(SensorEvent event) {
+        Sensor mySensor = event.sensor;
+
+
+        switch (mySensor.getType()) {
+            case Sensor.TYPE_ACCELEROMETER:
+                gravity = event.values.clone();
+                break;
+            case Sensor.TYPE_MAGNETIC_FIELD:
+                geomagnetic = event.values.clone();
+                sensorReady = true;
+                break;
+            default:
+                break;
+        }
+
+        if (geomagnetic != null && gravity != null && sensorReady) {
+            sensorReady = false;
+
+            SensorManager.getRotationMatrix(matrixR, null, gravity, geomagnetic);
+
+            matrixR = this.opglr.swapRotMatrix(matrixR);
+        }
+        
     }
 
 
