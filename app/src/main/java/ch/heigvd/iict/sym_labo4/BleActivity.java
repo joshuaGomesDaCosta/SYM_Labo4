@@ -58,6 +58,7 @@ public class BleActivity extends BaseTemplateActivity {
     
     private Button btnGetTemperature;
     private Button btnSendInteger;
+    private Button btnUpdateTime;
 
     private EditText editInteger;
 
@@ -96,7 +97,10 @@ public class BleActivity extends BaseTemplateActivity {
 
         this.btnSendInteger = findViewById(R.id.btn_integer);
         this.btnGetTemperature = findViewById(R.id.btn_get_temperature);
+        this.btnUpdateTime = findViewById(R.id.btn_update_time);
+
         this.editInteger = findViewById(R.id.edit_integer);
+
         this.textTemperature = findViewById(R.id.text_temperature);
         this.textCurrentTime = findViewById(R.id.text_current_time);
         this.textNbBtnClicked = findViewById(R.id.text_nbBtnClicked);
@@ -126,14 +130,16 @@ public class BleActivity extends BaseTemplateActivity {
             updateGui();
         });
 
-        bleViewModel.writeCurrentTime();
-
         this.bleViewModel.getCurrentTime().observe(this, (currentTime) -> {
-            textCurrentTime.setText(currentTime.getTime().toString());
+            textCurrentTime.setText( " " + currentTime.getTime().toString());
         });
 
         this.bleViewModel.getNbBtnClicked().observe(this, (nbBtnClicked) -> {
-            textNbBtnClicked.setText(nbBtnClicked.toString() + " fois.");
+            textNbBtnClicked.setText(" " + nbBtnClicked.toString() + " fois.");
+        });
+
+        this.btnUpdateTime.setOnClickListener((v) -> {
+            bleViewModel.writeCurrentTime();
         });
 
         this.btnGetTemperature.setOnClickListener((v) -> {
