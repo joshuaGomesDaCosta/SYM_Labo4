@@ -14,17 +14,14 @@ import ch.heigvd.iict.sym_labo4.gl.OpenGLRenderer;
 
 public class CompassActivity extends AppCompatActivity implements SensorEventListener {
 
+	//sensor and sensor manager
     private SensorManager mSensorManager;
-
     private Sensor mAccelerometer;
-
     private Sensor mMagnetic;
-
 
     //opengl
     private OpenGLRenderer opglr = null;
     private GLSurfaceView m3DView = null;
-
 
 
     float[] gravity = new float[3];//gravity
@@ -32,7 +29,6 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
     float[] matrixR = new float[16];//R
 
     boolean sensorReady = false;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,31 +50,19 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         //init opengl surface view
         this.m3DView.setRenderer(this.opglr);
 
-
+		//init the sensors
         this.mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
-
         this.mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
-
         this.mMagnetic = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
-
     }
-
-    /* TODO
-        your activity need to register to accelerometer and magnetometer sensors' updates
-        then you may want to call
-        this.opglr.swapRotMatrix()
-        with the 4x4 rotation matrix, everytime a new matrix is computed
-        more information on rotation matrix can be found on-line:
-        https://developer.android.com/reference/android/hardware/SensorManager.html#getRotationMatrix(float[],%20float[],%20float[],%20float[])
-    */
 
     @Override
     protected void onResume()
     {
         super.onResume();
+		
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
-
         mSensorManager.registerListener(this, mMagnetic, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
@@ -93,7 +77,6 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
     @Override
     public void onSensorChanged(SensorEvent event) {
         Sensor mySensor = event.sensor;
-
 
         switch (mySensor.getType()) {
             case Sensor.TYPE_ACCELEROMETER:
@@ -114,8 +97,5 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
 
             matrixR = this.opglr.swapRotMatrix(matrixR);
         }
-        
     }
-
-
 }
