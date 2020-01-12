@@ -58,12 +58,12 @@ public class BleActivity extends BaseTemplateActivity {
     
     private Button btnGetTemperature;
     private Button btnSendInteger;
-    private Button btnGetNbClicked;
-    private Button btnGetTime;
-    private Button btnSendTime;
-    
+
     private EditText editInteger;
+
     private TextView textTemperature;
+    private TextView textCurrentTime;
+    private TextView textNbBtnClicked;
 
     //menu elements
     private MenuItem scanMenuBtn = null;
@@ -96,10 +96,10 @@ public class BleActivity extends BaseTemplateActivity {
 
         this.btnSendInteger = findViewById(R.id.btn_integer);
         this.btnGetTemperature = findViewById(R.id.btn_get_temperature);
-        this.btnGetNbClicked = findViewById(R.id.btn_nb_clicked);
-        this.btnGetTime = findViewById(R.id.btn_get_time);
         this.editInteger = findViewById(R.id.edit_integer);
         this.textTemperature = findViewById(R.id.text_temperature);
+        this.textCurrentTime = findViewById(R.id.text_current_time);
+        this.textNbBtnClicked = findViewById(R.id.text_nbBtnClicked);
 
         //manage scanned item
         this.scanResultsAdapter = new ResultsAdapter(this);
@@ -126,20 +126,26 @@ public class BleActivity extends BaseTemplateActivity {
             updateGui();
         });
 
-        this.btnGetTemperature.setOnClickListener((v) -> {
-            if(bleViewModel.readTemperature()) {
-                runOnUiThread(() -> {
-                    //we connect to the clicked device
-                    this.bleViewModel.getTemperature().observe(this, (temperature) -> {
-                        this.textTemperature.setText("T : " + this.bleViewModel.getTemperature().getValue() + "°C");
-                    });
-                });
-            }
+        this.bleViewModel.getCurrentTime().observe(this, (currentTime) -> {
+            textCurrentTime.setText(currentTime.getTime().toString());
         });
 
-        this.btnSendTime.setOnClickListener((v) -> {
-            if(!bleViewModel.writeCurrentTime(Calendar.getInstance())){
-                Toast.makeText(getApplicationContext(),"Echec de synchronisation",Toast.LENGTH_LONG).show();
+        this.bleViewModel.getNbBtnClicked().observe(this, (nbBtnClicked) -> {
+            textNbBtnClicked.setText(nbBtnClicked + " fois.");
+        });
+
+        this.btnGetTemperature.setOnClickListener((v) -> {
+            if(bleViewModel.readTemperature()) {
+                if(this.bleViewModel.getTemperature().getValue() != null) {
+                    float temp = this.bleViewModel.getTemperature().getValue() / 10.F;
+                    textTemperature.setText("Température : " + temp + "°C");
+                }
+                else {
+                    Toast.makeText(getApplicationContext(),"Le périphérique n'a pas encore initialisé la température",Toast.LENGTH_LONG).show();
+                }
+            }
+            else{
+                Toast.makeText(getApplicationContext(),"Echec de lecture de température", Toast.LENGTH_LONG).show();
             }
         });
 
@@ -147,12 +153,16 @@ public class BleActivity extends BaseTemplateActivity {
             try{
                 Integer i = Integer.parseInt(editInteger.getText().toString());
                 if(bleViewModel.writeInteger(i)){
-                    Toast.makeText(getApplicationContext(),"Echec d'envois de données",Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(),"Envoi de la valeur " + i,Toast.LENGTH_LONG).show();
+                }
+                else{
+                    Toast.makeText(getApplicationContext(),"Echec d'envoi",Toast.LENGTH_LONG).show();
                 }
             }catch (Exception e){
-                Toast.makeText(getApplicationContext(),"N'accepte que les entiers",Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(),"Ne peut envoyer que des entiers",Toast.LENGTH_LONG).show();
             }
         });
+
     }
 
     @Override
