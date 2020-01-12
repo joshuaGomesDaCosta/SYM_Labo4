@@ -14,11 +14,11 @@ import ch.heigvd.iict.sym_labo4.gl.OpenGLRenderer;
 
 public class CompassActivity extends AppCompatActivity implements SensorEventListener {
 
-    private final SensorManager mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
+    private SensorManager mSensorManager;
 
-    private final Sensor mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+    private Sensor mAccelerometer;
 
-    //private final Sensor mMagnetic = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
+    private Sensor mMagnetic;
 
 
     //opengl
@@ -55,7 +55,11 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         this.m3DView.setRenderer(this.opglr);
 
 
+        this.mSensorManager = (SensorManager)getSystemService(SENSOR_SERVICE);
 
+        this.mAccelerometer = mSensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+
+        this.mMagnetic = mSensorManager.getDefaultSensor(Sensor.TYPE_MAGNETIC_FIELD);
 
 
     }
@@ -75,7 +79,7 @@ public class CompassActivity extends AppCompatActivity implements SensorEventLis
         super.onResume();
         mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_NORMAL);
 
-        //mSensorManager.registerListener(this, mMagnetic, SensorManager.SENSOR_DELAY_NORMAL);
+        mSensorManager.registerListener(this, mMagnetic, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     protected void onPause() {
