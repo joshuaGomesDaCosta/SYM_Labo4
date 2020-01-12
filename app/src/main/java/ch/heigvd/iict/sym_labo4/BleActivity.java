@@ -131,7 +131,7 @@ public class BleActivity extends BaseTemplateActivity {
         });
 
         this.bleViewModel.getNbBtnClicked().observe(this, (nbBtnClicked) -> {
-            textNbBtnClicked.setText(nbBtnClicked + " fois.");
+            textNbBtnClicked.setText(nbBtnClicked.toString() + " fois.");
         });
 
         this.btnGetTemperature.setOnClickListener((v) -> {

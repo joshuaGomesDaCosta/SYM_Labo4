@@ -306,7 +306,6 @@ public class BleOperationsViewModel extends AndroidViewModel {
             }
 
             readCharacteristic(temperatureChar).with((device, data) -> {
-
                 temperature.setValue( data.getIntValue(Data.FORMAT_UINT16, 0));
             }).enqueue();
 
