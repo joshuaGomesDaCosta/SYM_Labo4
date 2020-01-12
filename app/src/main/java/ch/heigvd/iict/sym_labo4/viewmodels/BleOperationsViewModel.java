@@ -17,13 +17,16 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import java.util.Calendar;
 import java.util.UUID;
 
 import ch.heigvd.iict.sym_labo4.BleActivity;
 import no.nordicsemi.android.ble.BleManager;
 import no.nordicsemi.android.ble.BleManagerCallbacks;
+import no.nordicsemi.android.ble.data.Data;
 
 import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT16;
+import static android.bluetooth.BluetoothGattCharacteristic.FORMAT_UINT8;
 
 public class BleOperationsViewModel extends AndroidViewModel {
 
@@ -54,6 +57,12 @@ public class BleOperationsViewModel extends AndroidViewModel {
     public LiveData<Integer> getTemperature() {
         return temperature;
     }
+
+    private final MutableLiveData<Integer> nbBtnClicked = new MutableLiveData<>();
+    public LiveData<Integer> getNbBtnClicked() { return nbBtnClicked; }
+
+    private final MutableLiveData<Calendar>  currentTime = new MutableLiveData<>();
+    public LiveData<Calendar> getCurrentTime() { return currentTime; }
 
     //references to the Services and Characteristics of the SYM Pixl
     private BluetoothGattService timeService = null, symService = null;
@@ -94,8 +103,42 @@ public class BleOperationsViewModel extends AndroidViewModel {
         vous pouvez placer ici les différentes méthodes permettant à l'utilisateur
         d'interagir avec le périphérique depuis l'activité
      */
+    public boolean writeCurrentTime(){
+        if (currentTimeChar == null) {
+            return false;
+        }
+        Calendar calendar = Calendar.getInstance();
+
+        //int year = calendar.get(Calendar.YEAR );
+        byte[] value = new byte[8];
+        value[0] = (byte)(calendar.get(Calendar.YEAR ));
+        value[1] = (byte)(calendar.get(Calendar.YEAR ) >> 8);
+        value[2] = (byte)(calendar.get(Calendar.MONTH) + 1);
+        value[3] = (byte)(calendar.get(Calendar.DAY_OF_MONTH));
+        value[4] = (byte)calendar.get(Calendar.HOUR_OF_DAY);
+        value[5] = (byte)calendar.get(Calendar.MINUTE);
+        value[6] = (byte)calendar.get(Calendar.SECOND);
+
+        currentTimeChar.setValue(value);
+
+
+        return mConnection.writeCharacteristic(currentTimeChar);
+    }
+
+    public boolean writeInteger(Integer i){
+        if (integerChar == null) {
+            return false;
+        }
+        byte[] value = new byte[1];
+        value[0] = i.byteValue();
+        integerChar.setValue(value);
+        return mConnection.writeCharacteristic(integerChar);
+    }
+
     public boolean readTemperature() {
-        if(!isConnected().getValue() || temperatureChar == null) return false;
+        if(!isConnected().getValue() || temperatureChar == null){
+            return false;
+        }
         return ble.readTemperature();
     }
 
@@ -211,7 +254,8 @@ public class BleOperationsViewModel extends AndroidViewModel {
                  */
 
                 //FIXME si tout est OK, on retourne true, sinon la librairie appelera la méthode onDeviceNotSupported()
-                return timeService != null && symService != null;
+                //pas besoin de vérifier les services on a pu setter les charactéristiques que si il y a le service
+                return buttonClickChar != null && temperatureChar != null && integerChar != null && currentTimeChar != null;
             }
 
             @Override
@@ -223,31 +267,18 @@ public class BleOperationsViewModel extends AndroidViewModel {
                     caractéristiques, on en profitera aussi pour mettre en place les callbacks correspondants.
                  */
 
-                mConnection.setCharacteristicNotification( currentTimeChar, true);
-                mConnection.setCharacteristicNotification( buttonClickChar, true);
-                BluetoothGattCallback bluetoothGattCallback = new BluetoothGattCallback() {
-                    @Override
-                    public void onCharacteristicRead(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        super.onCharacteristicRead(gatt, characteristic, status);
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
+                writeCurrentTime();
 
-                        }else{
-                            Log.w(TAG, "onCharacteristicRead: " + status);
-                        }
-                    }
+                setNotificationCallback(currentTimeChar).with((device, data) -> {
+                    readCurrentTime(data);
+                });
 
-                    @Override
-                    public void onCharacteristicWrite(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic, int status) {
-                        super.onCharacteristicWrite(gatt, characteristic, status);
-                        if (status == BluetoothGatt.GATT_SUCCESS) {
-                            if (characteristic.getUuid().equals( UUID_INTEGER)){
-                                characteristic.setValue(integer.getValue().toString());
-                            }
-                        }else{
-                            Log.w(TAG, "onCharacteristicWrite: " + status);
-                        }
-                    }
-                };
+                setNotificationCallback(buttonClickChar).with((device, data) -> {
+                    readNbButtonClicked(data);
+                });
+
+                enableNotifications(currentTimeChar).enqueue();
+                enableNotifications(buttonClickChar).enqueue();
             }
 
             @Override
@@ -269,9 +300,37 @@ public class BleOperationsViewModel extends AndroidViewModel {
                 des MutableLiveData
                 On placera des méthodes similaires pour les autres opérations...
             */
-            temperatureChar.getIntValue(FORMAT_UINT16,0);
 
-            return false; //FIXME
+            if(temperatureChar == null){
+                return false;
+            }
+
+            readCharacteristic(temperatureChar).with((device, data) -> {
+
+                temperature.setValue( data.getIntValue(Data.FORMAT_UINT16, 0));
+            }).enqueue();
+
+
+
+            return true;
         }
+
+        private void readCurrentTime(Data data){
+            Calendar calendar = Calendar.getInstance();
+
+            calendar.set(Calendar.YEAR, data.getIntValue(Data.FORMAT_UINT16,0));
+            calendar.set(Calendar.MONTH, data.getIntValue(Data.FORMAT_UINT8,2) - 1);
+            calendar.set(Calendar.DAY_OF_MONTH, data.getIntValue(Data.FORMAT_UINT8,3));
+            calendar.set(Calendar.HOUR_OF_DAY, data.getIntValue(Data.FORMAT_UINT8,4));
+            calendar.set(Calendar.MINUTE, data.getIntValue(Data.FORMAT_UINT8,5));
+            calendar.set(Calendar.SECOND, data.getIntValue(Data.FORMAT_UINT8,6));
+
+            currentTime.setValue(calendar);
+        }
+
+        private void readNbButtonClicked(Data data){
+            nbBtnClicked.setValue(data.getIntValue(Data.FORMAT_UINT8, 0));
+        }
+
     }
 }

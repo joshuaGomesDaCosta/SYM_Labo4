@@ -22,10 +22,12 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.lifecycle.ViewModelProviders;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import ch.heigvd.iict.sym_labo4.abstractactivies.BaseTemplateActivity;
 import ch.heigvd.iict.sym_labo4.adapters.ResultsAdapter;
@@ -56,12 +58,12 @@ public class BleActivity extends BaseTemplateActivity {
     
     private Button btnGetTemperature;
     private Button btnSendInteger;
-    private Button btnGetNbClicked;
-    private Button btnGetTime;
-    private Button btnSendTime;
-    
+
     private EditText editInteger;
+
     private TextView textTemperature;
+    private TextView textCurrentTime;
+    private TextView textNbBtnClicked;
 
     //menu elements
     private MenuItem scanMenuBtn = null;
@@ -93,8 +95,11 @@ public class BleActivity extends BaseTemplateActivity {
         this.emptyScanResults = findViewById(R.id.ble_scanresults_empty);
 
         this.btnSendInteger = findViewById(R.id.btn_integer);
+        this.btnGetTemperature = findViewById(R.id.btn_get_temperature);
         this.editInteger = findViewById(R.id.edit_integer);
         this.textTemperature = findViewById(R.id.text_temperature);
+        this.textCurrentTime = findViewById(R.id.text_current_time);
+        this.textNbBtnClicked = findViewById(R.id.text_nbBtnClicked);
 
         //manage scanned item
         this.scanResultsAdapter = new ResultsAdapter(this);
@@ -120,6 +125,44 @@ public class BleActivity extends BaseTemplateActivity {
         this.bleViewModel.isConnected().observe(this, (isConnected) -> {
             updateGui();
         });
+
+        this.bleViewModel.getCurrentTime().observe(this, (currentTime) -> {
+            textCurrentTime.setText(currentTime.getTime().toString());
+        });
+
+        this.bleViewModel.getNbBtnClicked().observe(this, (nbBtnClicked) -> {
+            textNbBtnClicked.setText(nbBtnClicked + " fois.");
+        });
+
+        this.btnGetTemperature.setOnClickListener((v) -> {
+            if(bleViewModel.readTemperature()) {
+                if(this.bleViewModel.getTemperature().getValue() != null) {
+                    float temp = this.bleViewModel.getTemperature().getValue() / 10.F;
+                    textTemperature.setText("Température : " + temp + "°C");
+                }
+                else {
+                    Toast.makeText(getApplicationContext(),"Le périphérique n'a pas encore initialisé la température",Toast.LENGTH_LONG).show();
+                }
+            }
+            else{
+                Toast.makeText(getApplicationContext(),"Echec de lecture de température", Toast.LENGTH_LONG).show();
+            }
+        });
+
+        this.btnSendInteger.setOnClickListener((v) ->{
+            try{
+                Integer i = Integer.parseInt(editInteger.getText().toString());
+                if(bleViewModel.writeInteger(i)){
+                    Toast.makeText(getApplicationContext(),"Envoi de la valeur " + i,Toast.LENGTH_LONG).show();
+                }
+                else{
+                    Toast.makeText(getApplicationContext(),"Echec d'envoi",Toast.LENGTH_LONG).show();
+                }
+            }catch (Exception e){
+                Toast.makeText(getApplicationContext(),"Ne peut envoyer que des entiers",Toast.LENGTH_LONG).show();
+            }
+        });
+
     }
 
     @Override
@@ -169,7 +212,6 @@ public class BleActivity extends BaseTemplateActivity {
         if(isConnected != null && isConnected) {
             this.scanPanel.setVisibility(View.GONE);
             this.operationPanel.setVisibility(View.VISIBLE);
-            //this.textTemperature.setText(Float.toString(this.bleViewModel.getTemperature().getValue()/10));
 
             if(this.scanMenuBtn != null && this.disconnectMenuBtn != null) {
                 this.scanMenuBtn.setVisible(false);
