@@ -267,8 +267,6 @@ public class BleOperationsViewModel extends AndroidViewModel {
                     caractéristiques, on en profitera aussi pour mettre en place les callbacks correspondants.
                  */
 
-                writeCurrentTime();
-
                 setNotificationCallback(currentTimeChar).with((device, data) -> {
                     readCurrentTime(data);
                 });
@@ -277,8 +275,10 @@ public class BleOperationsViewModel extends AndroidViewModel {
                     readNbButtonClicked(data);
                 });
 
+                //TODO depuis que currentTime et Temperature marche je n'arrive pas à faire en sorte que les 2notifications marche?
                 enableNotifications(currentTimeChar).enqueue();
                 enableNotifications(buttonClickChar).enqueue();
+
             }
 
             @Override
@@ -306,10 +306,8 @@ public class BleOperationsViewModel extends AndroidViewModel {
             }
 
             readCharacteristic(temperatureChar).with((device, data) -> {
-                temperature.setValue( data.getIntValue(Data.FORMAT_UINT16, 0));
+                temperature.setValue(temperatureChar.getIntValue(Data.FORMAT_UINT16, 0));
             }).enqueue();
-
-
 
             return true;
         }

@@ -23,7 +23,7 @@
     <string name="edit_integer">entrez un entier</string>
 
     <string name="waiting_data">en attente ...</string>
-    <string name="text_label_current_tim">heure :</string>
-    <string name="text_label_label_nbBtnClicked">Boutons clickés :</string>
+    <string name="text_label_current_tim">heure : </string>
+    <string name="text_label_label_nbBtnClicked">Boutons clickés : </string>
 
 </resources>

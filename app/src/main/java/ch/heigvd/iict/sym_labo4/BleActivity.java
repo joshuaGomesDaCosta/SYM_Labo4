@@ -126,6 +126,8 @@ public class BleActivity extends BaseTemplateActivity {
             updateGui();
         });
 
+        bleViewModel.writeCurrentTime();
+
         this.bleViewModel.getCurrentTime().observe(this, (currentTime) -> {
             textCurrentTime.setText(currentTime.getTime().toString());
         });
